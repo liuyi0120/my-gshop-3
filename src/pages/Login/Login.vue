@@ -13,11 +13,13 @@
           <div :class="{on: loginType}">
             <section class="login_message">
               <input type="tel" maxlength="11" placeholder="手机号" v-model="phone">
-              <button :disabled="!isRightPhone" class="get_verification" 
-              :class="{right_phone_number: isRightPhone}" @click.prevent="sendCode">获取验证码</button>
+              <button :disabled="!isRightPhone || computeTime>0" class="get_verification" 
+                :class="{right_phone_number: isRightPhone}" @click.prevent="sendCode">
+                {{computeTime>0 ? `已发送验证码(${computeTime}s)` : '获取验证码'}}
+              </button>
             </section>
             <section class="login_verification">
-              <input type="tel" maxlength="8" placeholder="验证码">
+              <input type="tel" maxlength="8" placeholder="验证码" v-model="code  ">
             </section>
             <section class="login_hint">
               温馨提示：未注册硅谷外卖帐号的手机号，登录时将自动注册，且代表已同意
@@ -27,22 +29,23 @@
           <div :class="{on: !loginType}">
             <section>
               <section class="login_message">
-                <input type="tel" maxlength="11" placeholder="手机/邮箱/用户名">
+                <input type="text" placeholder="用户名" v-model="name">
               </section>
               <section class="login_verification">
-                <input type="tel" maxlength="8" placeholder="密码">
-                <div class="switch_button off">
-                  <div class="switch_circle"></div>
-                  <span class="switch_text">...</span>
+                <input :type="isShowPwd ? 'text' : 'password'" maxlength="8" placeholder="密码" v-model="pwd">
+                <div class="switch_button" :class="isShowPwd ? 'on' :'off'" @click="isShowPwd = !isShowPwd">
+                  <div class="switch_circle" :class="{right: isShowPwd}"></div>
+                  <span class="switch_text">{{isShowPwd ? 'abc' : ''}}</span>
                 </div>
               </section>
               <section class="login_message">
-                <input type="text" maxlength="11" placeholder="验证码">
-                <img class="get_verification" src="./images/captcha.svg" alt="captcha">
+                <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
+                <img class="get_verification" src="http://localhost:5000/captcha" alt="captcha" 
+                @click="updateCapcha" ref="captcha">
               </section>
             </section>
           </div>
-          <button class="login_submit">登录</button>
+          <button class="login_submit" @click.prevent="loginType">登录</button>
         </form>
         <a href="javascript:;" class="about_us">关于我们</a>
       </div>
@@ -54,13 +57,25 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import {reqSendCode, reqPwdLogin, reqSmsLogin} from '../../api'
   export default {
     data () {
     return {
       //短信
       loginType: true,
       //手机号
-      phone: ''
+      phone: '',
+      //短信验证码
+      code: '',
+      //用户名验证
+      name: '',
+      //密码验证
+      pwd: '',
+      //图形验证码
+      captcha: '',
+      //验证倒计时
+      computeTime: 0,
+      isShowPwd: false
     }
     },
     computed :{
@@ -71,8 +86,37 @@
     },
     methods: {
       //发送验证码
-      sendCode(){
-        alert('验证码')
+      async sendCode(){
+        //alert('验证码')
+        this.computeTime = 10
+        const intervalId = setInterval(()=>{
+          this.computeTime --
+          if (this.computeTime === 0) {
+            clearInterval(intervalId)
+          }
+        },1000)
+        //短信验证码
+        const result = await reqSendCode(this.phone)
+        if (result.code === 0) {
+          alert('短信已成功发送')
+        }else{
+          alert(result.msg)
+        }
+      },
+      //图形验证码显示
+      updateCapcha () {
+        this.$refs.captcha.src = 'http://localhost:5000/captcha?time' + Date.now()
+      },
+      //登录
+      async login () {
+        let result
+        const {loginType, phone, code, name ,pwd, captcha} =this
+        if (!loginType) {
+          result = await reqPwdLogin({ name ,pwd, captcha })
+        }else{
+          result = await reqPwdLogin({ phaone, code })
+        }
+        console.log('result',result)
       }
     }
   }
@@ -181,6 +225,8 @@
                   background #fff
                   box-shadow 0 2px 4px 0 rgba(0,0,0,.1)
                   transition transform .3s
+                  &.right
+                    transform translateX(27px)
             .login_hint
               margin-top 12px
               color #999
