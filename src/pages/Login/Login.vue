@@ -1,4 +1,4 @@
-<template>
+  <template>
   <section class="loginContainer">
     <div class="loginInner">
       <div class="login_header">
@@ -12,8 +12,9 @@
         <form>
           <div :class="{on: loginType}">
             <section class="login_message">
-              <input type="tel" maxlength="11" placeholder="手机号">
-              <button disabled="disabled" class="get_verification">获取验证码</button>
+              <input type="tel" maxlength="11" placeholder="手机号" v-model="phone">
+              <button :disabled="!isRightPhone" class="get_verification" 
+              :class="{right_phone_number: isRightPhone}" @click.prevent="sendCode">获取验证码</button>
             </section>
             <section class="login_verification">
               <input type="tel" maxlength="8" placeholder="验证码">
@@ -56,9 +57,24 @@
   export default {
     data () {
     return {
-      loginType: true
+      //短信
+      loginType: true,
+      //手机号
+      phone: ''
     }
-     }
+    },
+    computed :{
+      //是否是一个正确的手机号
+      isRightPhone(){
+        return /^1\d{10}$/.test(this.phone)
+      }
+    },
+    methods: {
+      //发送验证码
+      sendCode(){
+        alert('验证码')
+      }
+    }
   }
 </script>
 
@@ -124,6 +140,8 @@
                 color #ccc
                 font-size 14px
                 background transparent
+                &.right_phone_number
+                  color black 
             .login_verification
               position relative
               margin-top 16px
