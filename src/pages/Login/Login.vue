@@ -1,4 +1,4 @@
-  <template>
+<template>
   <section class="loginContainer">
     <div class="loginInner">
       <div class="login_header">
@@ -19,7 +19,7 @@
               </button>
             </section>
             <section class="login_verification">
-              <input type="tel" maxlength="8" placeholder="验证码" v-model="code  ">
+              <input type="tel" maxlength="8" placeholder="验证码" v-model="code">
             </section>
             <section class="login_hint">
               温馨提示：未注册硅谷外卖帐号的手机号，登录时将自动注册，且代表已同意
@@ -33,19 +33,19 @@
               </section>
               <section class="login_verification">
                 <input :type="isShowPwd ? 'text' : 'password'" maxlength="8" placeholder="密码" v-model="pwd">
-                <div class="switch_button" :class="isShowPwd ? 'on' :'off'" @click="isShowPwd = !isShowPwd">
+                <div class="switch_button" :class="isShowPwd ? 'on' : 'off'" @click="isShowPwd = !isShowPwd">
                   <div class="switch_circle" :class="{right: isShowPwd}"></div>
                   <span class="switch_text">{{isShowPwd ? 'abc' : ''}}</span>
                 </div>
               </section>
               <section class="login_message">
                 <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
-                <img class="get_verification" src="http://localhost:5000/captcha" alt="captcha" 
-                @click="updateCapcha" ref="captcha">
+                <img class="get_verification" src="http://localhost:5000/captcha" alt="captcha"
+                  @click="updateCapcha" ref='captcha'>
               </section>
             </section>
           </div>
-          <button class="login_submit" @click.prevent="loginType">登录</button>
+          <button class="login_submit" @click.prevent="login">登录</button>
         </form>
         <a href="javascript:;" class="about_us">关于我们</a>
       </div>
@@ -57,66 +57,92 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import {reqSendCode, reqPwdLogin, reqSmsLogin} from '../../api'
+  // import { clearInterval, setInterval } from 'timers';
+  import { reqSendCode, reqPwdLogin, reqSmsLogin } from '../../api'
+  import { RECEIVE_USER } from '../../vuex/mutation-types'
   export default {
     data () {
-    return {
-      //短信
-      loginType: true,
-      //手机号
-      phone: '',
-      //短信验证码
-      code: '',
-      //用户名验证
-      name: '',
-      //密码验证
-      pwd: '',
-      //图形验证码
-      captcha: '',
-      //验证倒计时
-      computeTime: 0,
-      isShowPwd: false
-    }
+      return {
+        loginType: false, // true: 短信登陆, false: 密码登陆
+        phone: '', // 手机号
+        code: '', // 短信验证码
+        name: '', // 用户名
+        pwd: '', // 密码
+        captcha: '', // 图形验证码
+
+        computeTime: 0, // 计时剩余的时间, 为0时没有计时了
+        isShowPwd: false, // 是否显示密码, 默认不显示
+      }
     },
-    computed :{
-      //是否是一个正确的手机号
-      isRightPhone(){
+
+    computed: {
+      /* 
+      是否是正确手机号
+      */
+      isRightPhone () {
         return /^1\d{10}$/.test(this.phone)
       }
     },
+
     methods: {
-      //发送验证码
-      async sendCode(){
-        //alert('验证码')
+      /* 
+      发送验证
+      */
+      async sendCode () {
+        // alert('----')
+        // 设置最大时间
         this.computeTime = 10
-        const intervalId = setInterval(()=>{
-          this.computeTime --
-          if (this.computeTime === 0) {
+        // 启动循环定时器进行计时
+        const intervalId = setInterval(() => {
+          this.computeTime--
+          // 一旦到了0, 清除定时器
+          if (this.computeTime===0) {
             clearInterval(intervalId)
           }
-        },1000)
-        //短信验证码
+        }, 1000)
+
+        // 发送ajax请求: 发送短信验证码
         const result = await reqSendCode(this.phone)
-        if (result.code === 0) {
+        if (result.code===0) {
           alert('短信已成功发送')
-        }else{
+        } else {
           alert(result.msg)
         }
       },
-      //图形验证码显示
+
+      /* 
+      更新图形验证码显示
+      */
       updateCapcha () {
-        this.$refs.captcha.src = 'http://localhost:5000/captcha?time' + Date.now()
+        // 给img指定一个新的src值, 携带一个时间戳的参数
+        this.$refs.captcha.src = 'http://localhost:5000/captcha?time=' + Date.now()
       },
-      //登录
+
+     /* 
+     登陆
+     */
       async login () {
         let result
-        const {loginType, phone, code, name ,pwd, captcha} =this
+        const { loginType, phone, code, name, pwd, captcha } = this
+        // 发密码登陆的请求
         if (!loginType) {
-          result = await reqPwdLogin({ name ,pwd, captcha })
-        }else{
-          result = await reqPwdLogin({ phaone, code })
+          result = await reqPwdLogin({ name, pwd, captcha })
+        // 发短信登陆的请求
+        } else {
+          result = await reqSmsLogin(phone, code)
         }
-        console.log('result',result)
+
+        // 根据结果进行响应处理
+        console.log('result', result)
+        if (result.code===0) {
+          // 将user信息保存到state中
+          const user = result.data
+          this.$store.dispatch('recordUser', user)
+          // 跳转到个人中心
+          this.$router.replace('/profile')
+        } else { // 登陆失败
+          alert(result.msg)
+        }
       }
     }
   }
@@ -185,7 +211,7 @@
                 font-size 14px
                 background transparent
                 &.right_phone_number
-                  color black 
+                  color black
             .login_verification
               position relative
               margin-top 16px
