@@ -1,5 +1,5 @@
 <template>
-  <div class="star" :class="'star-'+size">
+  <div class="star" :class="'star-'+size"> 
     <span class="star-item" v-for="(c, index) in starClasses" :key="index" :class="c"></span>
   </div>
 </template>
@@ -7,9 +7,8 @@
 <script type="text/ecmascript-6">
   export default {
     props: {
-      score: Number,
-      // 评分
-      size: Number
+      score: Number, // 评分
+      size: Number, // 尺寸
     },
 
     computed: {
@@ -26,13 +25,15 @@
           arr.push('on')
         }
         // 2. 添加0/1个half
-        if (score * 10 - scoreInteger * 10 >= 5) {
+        if (score*10-scoreInteger*10 >= 5) {
           arr.push('half')
         }
         // 3. 添加m个off
-        while (arr.length < 5) {
+        while(arr.length<5) {
           arr.push('off')
         }
+        
+
         return arr
       }
     }
@@ -90,5 +91,5 @@
           bg-image('./images/star24_half')
         &.off
           bg-image('./images/star24_off')
-
+                  
 </style>

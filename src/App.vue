@@ -8,7 +8,7 @@
 <script type="text/ecmascript-6">
   import FooterGuide from './components/FooterGuide/FooterGuide'
   export default {
-    name: 'App',
+    name: "App",
     data () {
       return {
         msg: 'App Component'
@@ -18,6 +18,7 @@
     async mounted () {
       // 分发actoin, 从后台获取数据到state中
       this.$store.dispatch('getAddress')
+      this.$store.dispatch('autoLogin')
     },
 
     components: {

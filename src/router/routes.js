@@ -5,8 +5,9 @@ import Profile from '../pages/Profile/Profile.vue'
 import Login from '../pages/Login/Login.vue'
 import Shop from '../pages/Shop/Shop.vue'
 import ShopGoods from '../pages/Shop/ShopGoods.vue'
-import ShopInfe from '../pages/Shop/ShopInfo.vue'
+import ShopInfo from '../pages/Shop/ShopInfo.vue'
 import ShopRatings from '../pages/Shop/ShopRatings.vue'
+
 export default [
   {
     path: '/msite',
@@ -49,12 +50,12 @@ export default [
         component: ShopGoods
       },
       {
-        path: '/shop/ratings',
+        path: 'ratings',
         component: ShopRatings
       },
       {
         path: '/shop/info',
-        component: ShopInfe
+        component: ShopInfo
       },
       {
         path: '',
@@ -62,6 +63,7 @@ export default [
       }
     ]
   },
+
   {
     path: '/', // 项目根路径
     redirect: '/msite'

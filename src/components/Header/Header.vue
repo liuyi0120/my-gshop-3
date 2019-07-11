@@ -58,5 +58,5 @@
       transform translateY(-50%)
       .header_login_text
         color #fff
-
+    
 </style>

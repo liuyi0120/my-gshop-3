@@ -1,6 +1,6 @@
 <template>
   <div>
-shopinfo
+    ShopInfo
   </div>
 </template>
 

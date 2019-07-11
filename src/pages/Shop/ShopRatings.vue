@@ -1,6 +1,6 @@
 <template>
   <div>
-shopratings
+    ShopRatings
   </div>
 </template>
 
